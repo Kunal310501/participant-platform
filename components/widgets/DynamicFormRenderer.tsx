@@ -229,14 +229,7 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
           validator = Yup.number();
           break;
         case FIELDS_TYPE.DATE_PICKER: {
-          validator = Yup.string();
-          if (field.label?.toLowerCase().includes("birth")) {
-             validator = validator.test('age-range', 'Age must be between 10 and 25 years', (val: unknown) => {
-                if (!val) return true;
-                const diff = dayjs().diff(dayjs(val as string), 'year');
-                return diff >= 10 && diff <= 25;
-             });
-          }
+          validator = Yup.mixed();
           break;
         }
         case FIELDS_TYPE.FILE_UPLOAD: {
@@ -370,6 +363,14 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
             if (!value) return true;
             return dayjs(value as string | number).isAfter(dayjs().startOf('day'));
           });
+        }
+
+        if (lowercaseLabel.includes("birth")) {
+           validator = validator.test('age-range', 'Age must be between 10 and 25 years', (val: unknown) => {
+              if (!val || !dayjs(val as string).isValid()) return true;
+              const diff = dayjs().diff(dayjs(val as string), 'year');
+              return diff >= 10 && diff <= 25;
+           });
         }
 
         if (lowercaseLabel.includes("patent filing")) {
@@ -694,7 +695,7 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
                       onChange={(newValue) =>
                         formik.setFieldValue(
                           val.id,
-                          newValue && newValue.isValid() ? newValue.toISOString() : null
+                          newValue && newValue.isValid() ? newValue.toISOString() : (newValue ? "Invalid Date" : null)
                         )
                       }
                       slotProps={{
@@ -798,9 +799,9 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
                       variant={val.variant || "outlined"}
                       error={Boolean(getFieldError(val.id))}
                     >
-                      <InputLabel>{val.label || val.placeholder}</InputLabel>
+                      <InputLabel>{val.label || val.placeholder} {val.required ? "*" : ""}</InputLabel>
                       <Select
-                        label={val.label || val.placeholder}
+                        label={`${val.label || val.placeholder} ${val.required ? "*" : ""}`}
                         name={val.id}
                         value={(formik.values[val.id] as string) || ""}
                         onChange={formik.handleChange}
@@ -1115,6 +1116,7 @@ const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
                       firstErrorElement.focus();
                     }
                   }, 100);
+                  return;
                 }
                 if (initialData && Object.keys(initialData).length > 0 && !formik.dirty) {
                   showSnackbar("Please make some changes before updating", "warning");

@@ -3,7 +3,7 @@ import { AuthControllers } from "@/api/authControllers";
 import { useAppTheme } from "@/context/ThemeContext";
 import { LogoutOutlined } from "@mui/icons-material";
 import { Avatar, Box, Button, Paper, Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useSnackbar } from "@/context/SnackbarContext";
@@ -15,6 +15,7 @@ const Header = () => {
   const [userName, setUserName] = useState("Participant");
 
   const router = useRouter();
+  const pathname = usePathname();
   const [userAvatar, setUserAvatar] = useState("");
   const { showSnackbar } = useSnackbar();
 
@@ -235,27 +236,29 @@ const Header = () => {
                 </Box>
               </Box>
 
-              <Button
-                variant="text"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push("/profile");
-                }}
-                sx={{
-                  justifyContent: "flex-start",
-                  px: 1.5,
-                  py: 1,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 500,
-                  color: colors.TEXT_PRIMARY,
-                  "&:hover": {
-                    bgcolor: "rgba(0, 0, 0, 0.04)",
-                  },
-                }}
-              >
-                Profile
-              </Button>
+              {pathname !== "/profile" && (
+                <Button
+                  variant="text"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/profile");
+                  }}
+                  sx={{
+                    justifyContent: "flex-start",
+                    px: 1.5,
+                    py: 1,
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 500,
+                    color: colors.TEXT_PRIMARY,
+                    "&:hover": {
+                      bgcolor: "rgba(0, 0, 0, 0.04)",
+                    },
+                  }}
+                >
+                  Profile
+                </Button>
+              )}
 
               <Button
                 variant="text"

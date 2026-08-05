@@ -115,14 +115,6 @@ export default function Profile() {
       templateFields.reduce((acc, field) => {
         let validator: Yup.AnySchema = Yup.string();
 
-        if (field.required) {
-          validator = validator.test(
-            "required-trim",
-            `${field.label} is required`,
-            (value: string | number | boolean | null | undefined) => value !== null && value !== undefined && (typeof value === 'string' ? value.trim() !== '' : value !== false)
-          );
-        }
-
         if (field.type === "numberField" || field.type === "number" || field.type === "slider" || field.type === "rating") {
           validator = Yup.number().typeError(`${field.label} must be a number`);
           if (field.required) validator = validator.required(`${field.label} is required`);
@@ -162,18 +154,7 @@ export default function Profile() {
               }
             );
           }
-
-          if (field.required) {
-            validator = validator.test(
-              "fileRequired",
-              `${field.label} is required`,
-              (value) => {
-                return value !== null && value !== undefined && value !== "";
-              }
-            );
-          }
         }
-
         if (field.type === "telInput") {
           validator = validator.test(
             "isValidTel",
@@ -278,6 +259,34 @@ export default function Profile() {
             /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
             "Invalid email format"
           );
+        }
+
+        if (field.required) {
+          if (field.type === "file_upload" || field.type === "file" || field.type === "image") {
+            validator = validator.test(
+              "fileRequired",
+              `${field.label} is required`,
+              (value) => value !== null && value !== undefined && value !== ""
+            );
+          } else if (field.type === "boolean" || field.type === "switch" || field.type === "checkbox") {
+            validator = validator.test(
+              "boolRequired",
+              `${field.label} is required`,
+              (value) => value === true || String(value).toLowerCase() === "true" || value === "Yes"
+            );
+          } else if (field.type === "datePicker" || (field.label && (field.label.toLowerCase().includes("date of birth") || field.label.toLowerCase().includes("dob") || field.label.toLowerCase().includes("birth")))) {
+            validator = validator.test(
+              "dateRequired",
+              `${field.label} is required`,
+              (value) => value !== null && value !== undefined && value !== ""
+            );
+          } else {
+            validator = validator.test(
+              "required-trim",
+              `${field.label} is required`,
+              (value) => value !== null && value !== undefined && (typeof value === 'string' ? value.trim() !== '' : value !== false)
+            );
+          }
         }
 
         acc[field.id] = validator;
